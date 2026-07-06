@@ -23,56 +23,57 @@ Research on generative AI in knowledge-work and consulting tasks shows 25–40% 
 
 Atlas implements a **manager–worker multi-agent system** for two flagship workflows:
 
-1. **QBR / Q3 Review Pack Orchestrator**  
-   - Pulls KPIs from a data warehouse / BI  
-   - Generates a draft deck and executive summary using approved templates  
-   - Identifies stakeholders from CRM / HR hierarchies  
-   - Proposes and schedules meetings, sends pre-reads  
-   - Tracks comments, approvals, and post-meeting actions
+### 1. QBR / Q3 Review Pack Orchestrator
 
-2. **Credit Committee Review Pack Orchestrator**  
-   - Retrieves borrower exposure, collateral, risk ratings, covenant status  
-   - Generates a credit pack for committee review  
-   - Identifies mandatory committee members and observers  
-   - Schedules the review, circulates materials, and captures decisions/actions
+- Pulls KPIs from a data warehouse / BI  
+- Generates a draft deck and executive summary using approved templates  
+- Identifies stakeholders from CRM / HR hierarchies  
+- Proposes and schedules meetings, sends pre-reads  
+- Tracks comments, approvals, and post-meeting actions
+
+### 2. Credit Committee Review Pack Orchestrator
+
+- Retrieves borrower exposure, collateral, risk ratings, covenant status  
+- Generates a credit pack for committee review  
+- Identifies mandatory committee members and observers  
+- Schedules the review, circulates materials, and captures decisions/actions
 
 Both workflows are designed around **human-in-the-loop, policy-aware automation** suitable for regulated BFSI environments.
 
 ---
-
 ## High-Level Architecture
 
 Atlas is opinionated on **AWS** and uses **LangGraph** and **Temporal** to orchestrate multi-agent workflows, following patterns from AWS's multi-agent LangGraph guidance and other production examples.
 
 ```mermaid
-flowchart LR
-  User[Analyst / BU Head / Credit Officer] --> UI[React SPA (S3 + CloudFront)]
-  UI --> AppSync[AppSync GraphQL API]
-  AppSync --> Orchestrator[ECS Fargate - Orchestrator (LangGraph)]
-  Orchestrator --> Temporal[Temporal Workflows (Durable Execution)]
-  Orchestrator --> Agents
-
-  subgraph Agents["ECS Fargate - Agent Services"]
-    AA[AnalyticsAgent]
-    DA[DeckAgent]
-    CA[CRMAgent]
-    CalA[CalendarAgent]
-    CompA[ComplianceAgent]
-    NA[NotesAgent]
-    CRA[CreditRiskAgent]
-  end
-
-  AA --> DWH[(DWH / BI)]
-  CA --> CRM[(CRM)]
-  CRA --> CoreBank[(Core Banking / LOS)]
-  CalA --> Cal[(Exchange / Google Calendar)]
-  NA --> ITSM[(ITSM / Ticketing)]
-
-  DA --> S3Docs[(S3 - Decks & Docs)]
-  Orchestrator --> Aurora[(Aurora PostgreSQL - Metadata & Audit)]
-  Orchestrator --> Bedrock[(Amazon Bedrock + Knowledge Bases)]
-  Orchestrator --> CloudWatch[(CloudWatch / X-Ray)]
-  UI --> Cognito[(Cognito Auth)]
+graph TB
+    User["Analyst / BU Head / Credit Officer"] --> UI["React SPA<br/>(S3 + CloudFront)"]
+    UI --> AppSync["AppSync GraphQL API"]
+    AppSync --> Orch["Orchestrator<br/>(LangGraph on ECS Fargate)"]
+    Orch --> Temporal["Temporal Workflows<br/>(Durable Execution)"]
+    Orch --> Agents["Agent Services"]
+    
+    subgraph Agents ["ECS Fargate - Agent Services"]
+        AA["AnalyticsAgent"]
+        DA["DeckAgent"]
+        CA["CRMAgent"]
+        CalA["CalendarAgent"]
+        CompA["ComplianceAgent"]
+        NA["NotesAgent"]
+        CRA["CreditRiskAgent"]
+    end
+    
+    AA -.-> DWH[("DWH / BI")]
+    CA -.-> CRM[("CRM")]
+    CRA -.-> CoreBank[("Core Banking / LOS")]
+    CalA -.-> Cal[("Exchange / Google Calendar")]
+    NA -.-> ITSM[("ITSM / Ticketing")]
+    DA -.-> S3Docs[("S3 - Decks & Docs")]
+    
+    Orch -.-> Aurora[("Aurora PostgreSQL<br/>Metadata & Audit")]
+    Orch -.-> Bedrock[("Amazon Bedrock +<br/>Knowledge Bases")]
+    Orch -.-> CloudWatch[("CloudWatch / X-Ray")]
+    UI -.-> Cognito[("Cognito Auth")]
 ```
 
 ---
@@ -101,7 +102,6 @@ flowchart LR
 - **Apollo Client** – GraphQL client for AppSync  
 
 ---
-
 ## Agents and Responsibilities
 
 Atlas uses specialized agents, each owning a narrow capability:
@@ -155,10 +155,9 @@ Atlas uses specialized agents, each owning a narrow capability:
   - Human approvals and overrides are first-class events, supporting regulated BFSI needs
 
 - **Human-in-the-loop by design**  
-  - Decks, attendee lists, and scheduled meetings always go through human confirmation in the demo configuration (no "fully autonomous" mode)
+  - Decks, attendee lists, and scheduled meetings always go through human confirmation in the demo configuration (no \"fully autonomous\" mode)
 
 ---
-
 ## Project Structure
 
 > Planned layout – some directories may be stubs in the initial version.
@@ -225,7 +224,7 @@ atlas-bfsi-agentic-orchestrator/
 
    ```bash
    python -m venv .venv
-   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+   source .venv/bin/activate  # or .venv\\Scripts\\activate on Windows
    pip install -r services/orchestrator/requirements.txt
    ```
 
@@ -241,9 +240,9 @@ atlas-bfsi-agentic-orchestrator/
 
    ```json
    {
-     "bu_id": "retail_lending",
-     "quarter": "2026Q3",
-     "due_date": "2026-10-05"
+     \"bu_id\": \"retail_lending\",
+     \"quarter\": \"2026Q3\",
+     \"due_date\": \"2026-10-05\"
    }
    ```
 
@@ -265,13 +264,10 @@ Cloud deployment instructions (CDK stack, ECS, AppSync, Aurora, Bedrock) live in
 
 ---
 
-## AI Assistance & Credits
+## Contributing
 
-This project intentionally **documents the use of AI as a collaborator**:
+Contributions are welcome! Please open an issue or submit a pull request with your improvements.
 
-- System design and initial documentation were drafted with the help of an AI assistant (Perplexity Comet), then reviewed, adapted, and extended by the repository owner.  
-- All code, architecture decisions, and domain adaptations are validated and maintained by the human author.
+## License
 
-**Special thanks to AI assistance for initial system-design drafting; final design and implementation by @Steja28.**
-
----
+MIT License - see LICENSE file for details.
