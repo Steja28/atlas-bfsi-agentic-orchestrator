@@ -45,37 +45,35 @@ Both workflows are designed around **human-in-the-loop, policy-aware automation*
 
 Atlas is opinionated on **AWS** and uses **LangGraph** and **Temporal** to orchestrate multi-agent workflows, following patterns from AWS's multi-agent LangGraph guidance and other production examples.
 
-```mermaid
-graph TB
-    User["Analyst / BU Head / Credit Officer"] --> UI["React SPA<br/>(S3 + CloudFront)"]
-    UI --> AppSync["AppSync GraphQL API"]
-    AppSync --> Orch["Orchestrator<br/>(LangGraph on ECS Fargate)"]
-    Orch --> Temporal["Temporal Workflows<br/>(Durable Execution)"]
-    Orch --> Agents["Agent Services"]
-    
-    subgraph Agents ["ECS Fargate - Agent Services"]
-        AA["AnalyticsAgent"]
-        DA["DeckAgent"]
-        CA["CRMAgent"]
-        CalA["CalendarAgent"]
-        CompA["ComplianceAgent"]
-        NA["NotesAgent"]
-        CRA["CreditRiskAgent"]
-    end
-    
-    AA -.-> DWH[("DWH / BI")]
-    CA -.-> CRM[("CRM")]
-    CRA -.-> CoreBank[("Core Banking / LOS")]
-    CalA -.-> Cal[("Exchange / Google Calendar")]
-    NA -.-> ITSM[("ITSM / Ticketing")]
-    DA -.-> S3Docs[("S3 - Decks & Docs")]
-    
-    Orch -.-> Aurora[("Aurora PostgreSQL<br/>Metadata & Audit")]
-    Orch -.-> Bedrock[("Amazon Bedrock +<br/>Knowledge Bases")]
-    Orch -.-> CloudWatch[("CloudWatch / X-Ray")]
-    UI -.-> Cognito[("Cognito Auth")]
-```
+**System Architecture:**
 
+```
+┌─────────┐          ┌───────────┐          ┌──────────────┐
+│ Analyst │ ────────>│ React SPA │ ────────>│   AppSync    │
+│  / User │          │ (S3/CF)   │          │  GraphQL API │
+└─────────┘          └───────────┘          └──────┬───────┘
+                                                    │
+                                                    ▼
+                              ┌─────────────────────────────────┐
+                              │   LangGraph Orchestrator (ECS)  │
+                              │  + Temporal Durable Execution   │
+                              └────┬────────────────────┬────────┘
+                                   │                    │
+                    ┌──────────────┴─────┐      ┌──────┴────────┐
+                    ▼                    ▼      ▼               ▼
+          ┌─────────────────┐    ┌────────────────────────────────┐
+          │  Agent Services │    │   External Systems             │
+          │  (ECS Fargate)  │    │  - DWH / BI                    │
+          │                 │    │  - CRM                         │
+          │  • Analytics    │    │  - Core Banking                │
+          │  • Deck Gen     │    │  - Calendars                   │
+          │  • CRM          │    │  - ITSM                        │
+          │  • Calendar     │    │  - S3 Docs                     │
+          │  • Compliance   │    │  - Aurora (Metadata)           │
+          │  • Notes        │    │  - Bedrock (Knowledge)         │
+          │  • Credit Risk  │    │  - CloudWatch                  │
+          └─────────────────┘    └────────────────────────────────┘
+```
 ---
 
 ## Tech Stack
